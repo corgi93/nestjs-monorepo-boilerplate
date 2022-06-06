@@ -1,0 +1,44 @@
+service: monorepo-nestjs
+plugins:
+  - serverless-jetpack
+  - serverless-plugin-monorepo
+  - serverless-offline
+
+frameworkVersion: '3'
+variablesResolutionMode: 20210326
+
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+package:
+  include:
+    - ./node-modules
+
+  exclude:
+    - './node_module/**'
+    - './main/**'
+    - '**/node_modules/aws-sdk/**'
+  excludeDevDependencies: true
+  individually: true
+
+custom:
+  jetpack:
+    base: '..'
+  serverless-offline:
+    httpPort: 8000
+
+functions:
+  event-service:
+    handler: dist/apps/event-service/src/main.handler
+    # handler: .build/apps/event-service/src/main.handler
+    events:
+      - http:
+          path: v1/event-service
+          method: ANY
+          # path: /
+      - http:
+          path: v1/event-service/{proxy+}
+          method: ANY
+          # path: '{proxy+}'

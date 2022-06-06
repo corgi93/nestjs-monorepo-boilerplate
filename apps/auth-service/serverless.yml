@@ -1,0 +1,49 @@
+service: monorepo-nestjs
+plugins:
+  - serverless-jetpack
+  - serverless-plugin-monorepo
+  - serverless-offline
+
+frameworkVersion: '3'
+variablesResolutionMode: 20210326
+
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+package:
+  # exclude:
+  #   - .gitignore
+  #   - README.md
+  #   - serverless.yml
+  #   - nest-cli.json
+  #   - .prettierrc
+  include:
+    - ./node-modules
+
+  exclude:
+    - './node_module/**'
+    - './main/**'
+    - '**/node_modules/aws-sdk/**'
+  excludeDevDependencies: true
+  individually: true
+
+custom:
+  jetpack:
+    base: '..'
+  serverless-offline:
+    httpPort: 8000
+
+functions:
+  auth-service:
+    handler: dist/apps/auth-service/apps/auth-service/src/main.handler
+    events:
+      - http:
+          path: v1/auth-service
+          method: ANY
+          # path: /
+      - http:
+          path: v1/auth-service/{proxy+}
+          method: ANY
+          # path: '{proxy+}'
